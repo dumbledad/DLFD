@@ -38,25 +38,30 @@ class Exquisite_Corpse(object):
             return [3]
 
         for word in idx_seq:
-            p_next_word = model.predict(numpy.array(word)[None, None])[0,0]
+            p_next_word = model.predict(np.array(word)[None, None])[0,0]
 
-        while not generated_ending or get_lexicon_lookup[next_word] not in end_of_sent_tokens:
-            next_word = numpy.random.choice(a=p_next_word.shape[-1], p=p_next_word)
+        while not generated_ending or lexicon_lookup[next_word] not in end_of_sent_tokens:
+            next_word = np.random.choice(a=p_next_word.shape[-1], p=p_next_word)
 
             if next_word != 1:
                 generated_ending.append(next_word)
-                p_next_word = model.predict(numpy.array(next_word)[None, None])[0,0]
+                p_next_word = model.predict(np.array(next_word)[None, None])[0,0]
 
         model.reset_states()
+        
+        generated_ending = " ".join( [lexicon_lookup[word] if word in lexicon_lookup else "" for word in generated_ending] )
+        
         return generated_ending
+ 
 
-        
-        
+
+
+
     def text_to_tokens(lines, encoder):
         tokens = [ [word.lower_ for word in encoder(line)] for line in lines]
         return tokens
  
-    def make_lexicon(token_seqs, min_freq=3):
+    def make_lexicon(token_seqs, min_freq=4):
         token_counts = {}
         for seq in token_seqs:
             for token in seq:
@@ -76,16 +81,21 @@ class Exquisite_Corpse(object):
 
     def get_lexicon_lookup(lexicon):
         lexicon_lookup = { idx: lexicon_item for lexicon_item, idx in lexicon.items()}
-        lexicon_lookup[0] = "" #map 0 padding to empty string
-        lexicon_lookup[793] = ""
-        print("LEXICON LOOKUP SAMPLE:")
-        print(list(lexicon_lookup.items())[500:510])
+        lexicon_lookup[0] = ""
         return lexicon_lookup
 
     def tokens_to_ids(all_tokens, lexicon):
         ids = [[lexicon[token] if token in lexicon else lexicon['<UNK>'] for token in token_line] for token_line in all_tokens]
         return ids
 
+    def test(self):
+        answer = self.test()
+        return answer * answer
+        
+    def test2():
+        return 20
+    
+    
     def generate_text(self, model, length, vocab_size, ix_to_char):
 
         # starting with random character
